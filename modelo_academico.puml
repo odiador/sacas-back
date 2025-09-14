@@ -107,9 +107,32 @@ class Periodo {
 
 class Horario {
   + id_horario: NUMBER <<PK>>
-  + dia_semana: VARCHAR2(20)
-  + hora_inicio: TIMESTAMP
-  + hora_fin: TIMESTAMP
+  # id_dia: NUMBER <<FK>>
+  + hora_inicio: DATE
+  + hora_fin: DATE
+}
+
+class DiaSemana {
+  + id_dia: NUMBER <<PK>>
+  + nombre: VARCHAR2(20) <<UNIQUE>>
+}
+
+class Auditoria_Log {
+  + id_audit: NUMBER <<PK>>
+  + tabla_obj: VARCHAR2(100)
+  + pk_valor: VARCHAR2(4000)
+  + operacion: VARCHAR2(10)
+  + usuario: VARCHAR2(100)
+  + fecha_operacion: TIMESTAMP
+}
+
+class CierreNotas {
+  + id_cierre: NUMBER <<PK>>
+  + id_periodo: NUMBER <<FK>>
+  + id_grupo: NUMBER <<FK>>
+  + cerrado_por: VARCHAR2(100)
+  + fecha_cierre: TIMESTAMP
+  + abierto: BOOLEAN
 }
 
 class RiesgoAcademico {
@@ -197,5 +220,10 @@ Docente "1" -- "1..*" Grupo_Docente : dicta
 
 Grupo "1" -- "1..*" Grupo_Horario : tiene
 Horario "1" -- "1..*" Grupo_Horario : es asignado a
+
+DiaSemana "1" -- "1..*" Horario : tiene
+Periodo "1" -- "0..*" CierreNotas : controla
+Grupo "1" -- "0..*" CierreNotas : afecta
+' Auditoría es genérica (no FK explícita en el modelo UML) 
 
 @enduml

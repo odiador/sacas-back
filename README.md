@@ -1,6 +1,6 @@
 # Proyecto Final – Bases de Datos II
 
-**Título:** Sistema Académico con Extensión Analítica y NoSQL
+**Título:** Amador & Calderón Academic Services
 
 ---
 
