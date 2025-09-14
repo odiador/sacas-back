@@ -116,11 +116,29 @@ El proyecto incluye diseño conceptual, lógico y físico de la BD relacional, s
 ### 4. Riesgo Académico
 
 - Clasificación automática de riesgo:
-  - Al cierre del semestre, recalcular nivel de riesgo según promedio, materias perdidas y repeticiones.
-  - Artefacto: procedimiento batch al cierre de periodo.
+   Al cierre del semestre, el sistema recalcula el nivel de riesgo académico con base en los siguientes criterios:
 
+     -Riesgo 1: Promedio del último semestre menor a 2.0.
+
+     -Riesgo 2: Pérdida de dos (2) materias en el semestre anterior.
+
+     -Riesgo 3: Pérdida de una misma materia por tercera vez.
+
+     -Riesgo 4: Promedio del semestre anterior menor a 3.0.
+
+Artefacto: procedimiento batch al cierre de periodo.
+
+Criterio: actualizar y registrar automáticamente el nivel de riesgo para aplicarlo en el siguiente proceso de matrícula.
 - Matrícula condicionada por riesgo:
-  - Aplicar topes de créditos según nivel de riesgo vigente.
+  - Aplicar topes de créditos según nivel de riesgo vigente:
+          -Sin riesgo: hasta 21 créditos.
+
+          -Riesgo 1 o Riesgo 3: hasta 8 créditos.
+
+          -Riesgo 2: hasta 12 créditos.
+
+          -Riesgo 4: hasta 16 créditos.
+    
   - Artefacto: funciones de consulta y triggers.
 
 - Alertas tempranas (opcional):
