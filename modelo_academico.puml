@@ -1,0 +1,201 @@
+@startuml
+' Modelo de Clases para el Sistema Académico - Universidad del Quindío
+
+' --- Entidades Principales ---
+
+class Estudiante {
+  + id_estudiante: NUMBER <<PK>>
+  + codigo_matricula: VARCHAR2(20) <<UNIQUE>>
+  + nombre: VARCHAR2(100)
+  + documento_identidad: VARCHAR2(20) <<UNIQUE>>
+  + correo_institucional: VARCHAR2(100) <<UNIQUE>>
+  + telefono: VARCHAR2(15)
+  --
+  # id_programa: NUMBER <<FK>>
+  # id_sede: NUMBER <<FK>>
+  # id_riesgo: NUMBER <<FK>>
+}
+
+class Docente {
+  + id_docente: NUMBER <<PK>>
+  + nombre: VARCHAR2(100)
+  + documento_identidad: VARCHAR2(20) <<UNIQUE>>
+  + correo_institucional: VARCHAR2(100) <<UNIQUE>>
+  + telefono: VARCHAR2(15)
+}
+
+class Programa {
+  + id_programa: NUMBER <<PK>>
+  + codigo_programa: VARCHAR2(20) <<UNIQUE>>
+  + nombre: VARCHAR2(100)
+  + total_creditos: NUMBER
+  --
+  # id_facultad: NUMBER <<FK>>
+}
+
+class Asignatura {
+  + id_asignatura: NUMBER <<PK>>
+  + codigo_asignatura: VARCHAR2(20) <<UNIQUE>>
+  + nombre: VARCHAR2(100)
+  + creditos: NUMBER
+  + horas_semanales: NUMBER
+  --
+  # id_tipo_asignatura: NUMBER <<FK>>
+}
+
+class Grupo {
+  + id_grupo: NUMBER <<PK>>
+  + nombre: VARCHAR2(20)
+  + cupo_maximo: NUMBER
+  --
+  # id_asignatura: NUMBER <<FK>>
+  # id_periodo: NUMBER <<FK>>
+  # id_salon: NUMBER <<FK>>
+}
+
+class Matricula {
+  + id_matricula: NUMBER <<PK>>
+  + fecha_matricula: DATE
+  --
+  # id_estudiante: NUMBER <<FK>>
+  # id_periodo: NUMBER <<FK>>
+}
+
+class Calificacion {
+  + id_calificacion: NUMBER <<PK>>
+  + nota: NUMBER(3,2)
+  --
+  # id_matricula_asignatura: NUMBER <<FK>>
+  # id_item_evaluacion: NUMBER <<FK>>
+}
+
+class ItemEvaluacion {
+  + id_item_evaluacion: NUMBER <<PK>>
+  + nombre: VARCHAR2(50)
+  + porcentaje: NUMBER(5,2)
+  --
+  # id_grupo: NUMBER <<FK>>
+}
+
+' --- Entidades de Soporte y Catálogos ---
+
+class Facultad {
+  + id_facultad: NUMBER <<PK>>
+  + nombre: VARCHAR2(100)
+}
+
+class Sede {
+  + id_sede: NUMBER <<PK>>
+  + nombre: VARCHAR2(100)
+  + direccion: VARCHAR2(255)
+}
+
+class Salon {
+  + id_salon: NUMBER <<PK>>
+  + nombre: VARCHAR2(50)
+  + capacidad: NUMBER
+  --
+  # id_sede: NUMBER <<FK>>
+}
+
+class Periodo {
+  + id_periodo: NUMBER <<PK>>
+  + nombre: VARCHAR2(20) <<UNIQUE>>
+  + fecha_inicio: DATE
+  + fecha_fin: DATE
+}
+
+class Horario {
+  + id_horario: NUMBER <<PK>>
+  + dia_semana: VARCHAR2(20)
+  + hora_inicio: TIMESTAMP
+  + hora_fin: TIMESTAMP
+}
+
+class RiesgoAcademico {
+  + id_riesgo: NUMBER <<PK>>
+  + nombre: VARCHAR2(50)
+  + descripcion: VARCHAR2(255)
+  + max_creditos: NUMBER
+}
+
+class TipoAsignatura {
+  + id_tipo_asignatura: NUMBER <<PK>>
+  + nombre: VARCHAR2(50)
+}
+
+class InfoAcademicaDocente {
+    + id_info_academica: NUMBER <<PK>>
+    + institucion: VARCHAR2(100)
+    + nivel_estudio: VARCHAR2(50)
+    --
+    # id_docente: NUMBER <<FK>>
+}
+
+' --- Tablas de Unión (Relaciones N:M) ---
+
+class Matricula_Asignatura {
+  + id_matricula_asignatura: NUMBER <<PK>>
+  + nota_definitiva: NUMBER(3,2)
+  + estado: VARCHAR2(20)
+  --
+  # id_matricula: NUMBER <<FK>>
+  # id_grupo: NUMBER <<FK>>
+}
+
+class Grupo_Docente {
+  + id_grupo: NUMBER <<PK>> <<FK>>
+  + id_docente: NUMBER <<PK>> <<FK>>
+}
+
+class Grupo_Horario {
+    + id_grupo: NUMBER <<PK>> <<FK>>
+    + id_horario: NUMBER <<PK>> <<FK>>
+}
+
+class Prerrequisito {
+  + id_asignatura_origen: NUMBER <<PK>> <<FK>>
+  + id_asignatura_prerreq: NUMBER <<PK>> <<FK>>
+}
+
+' --- Relaciones ---
+
+Programa "1" -- "1..*" Estudiante : tiene
+Facultad "1" -- "1..*" Programa : pertenece a
+
+Sede "1" -- "1..*" Estudiante : está en
+Sede "1" -- "1..*" Salon : tiene
+
+RiesgoAcademico "1" -- "0..*" Estudiante : tiene
+
+Asignatura "1" -- "1..*" Grupo : se ofrece en
+TipoAsignatura "1" -- "1..*" Asignatura : es de tipo
+
+Periodo "1" -- "1..*" Grupo : se dicta en
+Periodo "1" -- "1..*" Matricula : se realiza en
+
+Salon "1" -- "1..*" Grupo : usa
+
+Estudiante "1" -- "1..*" Matricula : realiza
+
+Matricula "1" -- "1..*" Matricula_Asignatura : contiene
+Grupo "1" -- "1..*" Matricula_Asignatura : tiene inscritos
+
+Matricula_Asignatura "1" -- "1..*" Calificacion : tiene
+ItemEvaluacion "1" -- "1..*" Calificacion : corresponde a
+
+Grupo "1" -- "1..*" ItemEvaluacion : tiene
+
+Docente "1" -- "1..*" InfoAcademicaDocente : tiene
+
+' Relaciones N:M
+Asignatura "1" -- "0..*" Prerrequisito : requiere
+Asignatura "1" -- "0..*" Prerrequisito : es prerrequisito de
+
+Grupo "1" -- "1..*" Grupo_Docente : es dictado por
+Docente "1" -- "1..*" Grupo_Docente : dicta
+
+Grupo "1" -- "1..*" Grupo_Horario : tiene
+Horario "1" -- "1..*" Grupo_Horario : es asignado a
+
+@enduml
