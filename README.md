@@ -131,6 +131,7 @@ Artefacto: procedimiento batch al cierre de periodo.
 Criterio: actualizar y registrar automáticamente el nivel de riesgo para aplicarlo en el siguiente proceso de matrícula.
 - Matrícula condicionada por riesgo:
   - Aplicar topes de créditos según nivel de riesgo vigente:
+
           -Sin riesgo: hasta 21 créditos.
 
           -Riesgo 1 o Riesgo 3: hasta 8 créditos.
