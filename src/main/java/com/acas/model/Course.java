@@ -48,7 +48,7 @@ public class Course {
     
     @ElementCollection
     @CollectionTable(name = "course_schedule_days", joinColumns = @JoinColumn(name = "course_id"))
-    @Column(name = "day")
+    @Column(name = "schedule_day")
     private List<String> scheduleDays;
     
     private String scheduleTime;
