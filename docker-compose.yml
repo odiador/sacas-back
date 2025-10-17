@@ -1,0 +1,80 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: acas-postgres
+    environment:
+      - POSTGRES_DB=${DATABASE_NAME:-acasdb}
+      - POSTGRES_USER=${DATABASE_USERNAME:-acas_user}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    ports:
+      - "${DATABASE_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - acas-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME:-acas_user} -d ${DATABASE_NAME:-acasdb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # ACAS Backend Application
+  acas-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: acas-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${SERVER_PORT:-3001}:3001"
+    environment:
+      # Server Configuration
+      - SERVER_PORT=${SERVER_PORT:-3001}
+      - SERVER_SERVLET_CONTEXT_PATH=/api
+      
+      # Database Configuration
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${DATABASE_NAME:-acasdb}
+      - SPRING_DATASOURCE_USERNAME=${DATABASE_USERNAME:-acas_user}
+      - SPRING_DATASOURCE_PASSWORD=${DATABASE_PASSWORD}
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+      
+      # JPA Configuration
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=${JPA_DDL_AUTO:-update}
+      - SPRING_JPA_SHOW_SQL=${JPA_SHOW_SQL:-false}
+      
+      # JWT Configuration
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=${JWT_EXPIRATION:-604800000}
+      
+      # CORS Configuration
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
+      
+      # Logging
+      - LOGGING_LEVEL_ROOT=${LOGGING_LEVEL:-INFO}
+      - LOGGING_LEVEL_COM_ACAS=${APP_LOGGING_LEVEL:-DEBUG}
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - acas-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/api/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  acas-network:
+    driver: bridge
